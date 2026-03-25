@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👨‍👩‍👧‍👦 외가친척 채팅방 다이제스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF8F0;
+  --card: #FFFFFF;
+  --primary: #E8734A;
+  --primary-light: #FFF0EB;
+  --secondary: #4A90D9;
+  --secondary-light: #EBF3FF;
+  --accent: #F5C842;
+  --accent-light: #FFF8E1;
+  --text: #2D2016;
+  --text-sub: #7A6B5D;
+  --border: #F0E6DA;
+  --green: #4CAF50;
+  --green-light: #E8F5E9;
+  --purple: #9C6ADE;
+  --purple-light: #F3ECFF;
+  --pink: #E95F8A;
+  --pink-light: #FFF0F5;
+  --shadow: 0 2px 16px rgba(45,32,22,0.06);
+  --shadow-hover: 0 6px 24px rgba(45,32,22,0.12);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #E8734A 0%, #F5C842 50%, #4A90D9 100%);
+  padding: 60px 20px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-family: 'Gowun Batang', serif;
+  font-size: clamp(32px, 6vw, 52px);
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  margin-bottom: 8px;
+  position: relative;
+}
+.hero-sub {
+  color: rgba(255,255,255,0.9);
+  font-size: 15px;
+  font-weight: 400;
+}
+.hero-date {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* Container */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Stat Cards Row */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: -40px;
+  position: relative;
+  z-index: 2;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 20px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.stat-num {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 900;
+  line-height: 1.2;
+}
+.stat-card:nth-child(1) .stat-num { color: var(--primary); }
+.stat-card:nth-child(2) .stat-num { color: var(--secondary); }
+.stat-card:nth-child(3) .stat-num { color: var(--green); }
+.stat-card:nth-child(4) .stat-num { color: var(--purple); }
+.stat-label {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 4px;
+}
+
+/* Section */
+.section {
+  margin-top: 32px;
+}
+.section-title {
+  font-family: 'Gowun Batang', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .emoji { font-size: 26px; }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+/* Ranking */
+.ranking-list { list-style: none; }
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.ranking-item:last-child { border-bottom: none; }
+.rank-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
+.rank-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #fff; }
+.rank-3 { background: linear-gradient(135deg, #CD7F32, #B8690E); color: #fff; }
+.rank-n { background: var(--border); color: var(--text-sub); }
+.rank-name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 15px;
+}
+.rank-bar-wrap {
+  flex: 2;
+  height: 28px;
+  background: #F5F0EB;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+.rank-bar {
+  height: 100%;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  min-width: 50px;
+  transition: width 1s ease;
+}
+.rank-bar.c1 { background: linear-gradient(90deg, #E8734A, #F5A623); }
+.rank-bar.c2 { background: linear-gradient(90deg, #4A90D9, #6BBDFF); }
+.rank-bar.c3 { background: linear-gradient(90deg, #9C6ADE, #C49CFF); }
+.rank-bar.c4 { background: linear-gradient(90deg, #4CAF50, #81C784); }
+.rank-bar.c5 { background: linear-gradient(90deg, #E95F8A, #FF8EB3); }
+
+/* Word Cloud */
+.word-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 20px 0;
+}
+.word-tag {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-weight: 500;
+  transition: transform 0.2s;
+  cursor: default;
+}
+.word-tag:hover { transform: scale(1.1); }
+.word-tag.s1 { font-size: 24px; font-weight: 900; }
+.word-tag.s2 { font-size: 20px; font-weight: 700; }
+.word-tag.s3 { font-size: 16px; font-weight: 500; }
+.word-tag.s4 { font-size: 14px; }
+.word-tag.s5 { font-size: 13px; color: var(--text-sub); }
+
+.wc1 { background: var(--primary-light); color: var(--primary); }
+.wc2 { background: var(--secondary-light); color: var(--secondary); }
+.wc3 { background: var(--accent-light); color: #B8860B; }
+.wc4 { background: var(--green-light); color: var(--green); }
+.wc5 { background: var(--purple-light); color: var(--purple); }
+.wc6 { background: var(--pink-light); color: var(--pink); }
+
+/* Charts */
+.chart-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+  padding-top: 10px;
+}
+.bar-col {
+  flex: 1;
+  min-width: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  min-height: 4px;
+  transition: height 1s ease;
+  cursor: default;
+  position: relative;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label {
+  font-size: 10px;
+  color: var(--text-sub);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  max-height: 60px;
+  overflow: hidden;
+}
+.bar-val {
+  font-size: 9px;
+  color: var(--text-sub);
+  text-align: center;
+}
+
+/* Hour chart */
+.hour-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 120px;
+}
+.hour-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  min-height: 2px;
+  transition: height 0.8s ease;
+}
+.hour-labels {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+.hour-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-sub);
+}
+
+/* DOW chart */
+.dow-chart {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  height: 100px;
+  justify-content: center;
+}
+.dow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 80px;
+}
+.dow-bar {
+  width: 100%;
+  border-radius: 8px 8px 4px 4px;
+  min-height: 6px;
+}
+.dow-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-sub);
+}
+.dow-val {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+/* Fun facts */
+.fun-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.fun-card {
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  text-align: center;
+}
+.fun-card .fun-icon { font-size: 32px; margin-bottom: 8px; }
+.fun-card .fun-num { font-size: 28px; font-weight: 900; }
+.fun-card .fun-label { font-size: 13px; margin-top: 4px; }
+.fun-card.fc1 { background: var(--primary-light); color: var(--primary); }
+.fun-card.fc2 { background: var(--secondary-light); color: var(--secondary); }
+.fun-card.fc3 { background: var(--accent-light); color: #B8860B; }
+.fun-card.fc4 { background: var(--green-light); color: var(--green); }
+.fun-card.fc5 { background: var(--purple-light); color: var(--purple); }
+.fun-card.fc6 { background: var(--pink-light); color: var(--pink); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  padding: 8px 18px;
+  border-radius: 30px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.tab-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* GitHub Guide */
+.guide-card {
+  background: linear-gradient(135deg, #24292e, #1a1e22);
+  color: #e6edf3;
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 16px;
+}
+.guide-card h3 {
+  color: #58a6ff;
+  font-size: 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guide-step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+  align-items: flex-start;
+}
+.guide-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #58a6ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.guide-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #b1bac4;
+}
+.guide-text strong { color: #e6edf3; }
+.guide-text code {
+  background: #30363d;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #79c0ff;
+  font-family: monospace;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  background: var(--text);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.15s;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .fun-grid { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 40px 16px 60px; }
+  .card { padding: 18px; }
+  .rank-bar-wrap { flex: 1.5; }
+  .ranking-item { gap: 8px; }
+  .rank-name { font-size: 13px; }
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Monthly chart specific */
+.monthly-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 140px;
+}
+.monthly-bar {
+  flex: 1;
+  min-width: 8px;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  cursor: default;
+  position: relative;
+}
+.monthly-bar:hover .tooltip { opacity: 1; }
+.monthly-labels {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+}
+.monthly-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 8px;
+  color: var(--text-sub);
+  writing-mode: vertical-rl;
+  height: 40px;
+  overflow: hidden;
+}
+
+/* Upload section */
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: none;
+}
+.upload-area:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-badge">📊 채팅방 다이제스트</div>
+  <h1>👨‍👩‍👧‍👦 외가친척</h1>
+  <p class="hero-sub">우리 가족의 카카오톡 이야기 · 멤버 20명</p>
+  <p class="hero-date">2022.01.06 ~ 2026.03.25 · 4년 간의 기록</p>
+</header>
+
+<!-- Stat Cards -->
+<div class="container">
+  <div class="stat-row">
+    <div class="stat-card animate-in delay-1">
+      <div class="stat-num">36,128</div>
+      <div class="stat-label">전체 메시지</div>
+    </div>
+    <div class="stat-card animate-in delay-2">
+      <div class="stat-num">1,295</div>
+      <div class="stat-label">대화한 날</div>
+    </div>
+    <div class="stat-card animate-in delay-3">
+      <div class="stat-num">20</div>
+      <div class="stat-label">참여 멤버</div>
+    </div>
+    <div class="stat-card animate-in delay-4">
+      <div class="stat-num">4년+</div>
+      <div class="stat-label">함께한 시간</div>
+    </div>
+  </div>
+
+  <!-- Fun Facts -->
+  <div class="section">
+    <h2 class="section-title"><span class="emoji">🎉</span> 재미있는 숫자들</h2>
+    <div class="fun-grid">
+      <div class="fun-card fc1">
+        <div class="fun-icon">📸</div>
+        <div class="fun-num">3,684</div>
+        <div class="fun-label">공유한 사진</div>
+      </div>
+      <div class="fun-card fc2">
+        <div class="fun-icon">😄</div>
+        <div class="fun-num">2,782</div>
+        <div class="fun-label">이모티콘</div>
+      </div>
+      <div class="fun-card fc3">
+        <div class="fun-icon">🎬</div>
+        <div class="fun-num">996</div>
+        <div class="fun-label">공유한 동영상</div>
+      </div>
+      <div class="fun-card fc5">
+        <div class="fun-icon">🔥</div>
+        <div class="fun-num">165</div>
+        <div class="fun-label">하루 최다 메시지<br><small style="font-size:11px;font-weight:400">2022.01.11</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Volume Ranking -->
+  <div class="section">
+    <h2 class="section-title"><span class="emoji">🏆</span> 대화량 랭킹 TOP 10</h2>
+    <div class="card">
+      <ul class="ranking-list" id="rankingList"></ul>
+    </div>
+  </div>
+
+  <!-- Word Cloud -->
+  <div class="section">
+    <h2 class="section-title"><span class="emoji">💬</span> 가장 많이 쓴 말</h2>
+    <div class="card">
+      <div class="word-cloud" id="wordCloud"></div>
+    </div>
+  </div>
+
+  <!-- Charts Section with Tabs -->
+  <div class="section">
+    <h2 class="section-title"><span class="emoji">📈</span> 대화 트렌드</h2>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('monthly')">월별 추이</button>
+      <button class="tab-btn" onclick="switchTab('weekly')">최근 주간</button>
+      <button class="tab-btn" onclick="switchTab('hourly')">시간대별</button>
+      <button class="tab-btn" onclick="switchTab('dow')">요일별</button>
+    </div>
+
+    <div class="tab-content active" id="tab-monthly">
+      <div class="card">
+        <div class="chart-container">
+          <div class="monthly-chart" id="monthlyChart"></div>
+          <div class="monthly-labels" id="monthlyLabels"></div>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-top:12px;">
+          🔥 최다 대화 월: <strong style="color:var(--primary);">2022년 11월 (1,789건)</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-weekly">
+      <div class="card">
+        <div class="chart-container">
+          <div class="bar-chart" id="weeklyChart"></div>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-top:8px;">최근 12주 대화량</p>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-hourly">
+      <div class="card">
+        <div class="chart-container">
+          <div class="hour-chart" id="hourlyChart"></div>
+          <div class="hour-labels" id="hourlyLabels"></div>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-top:12px;">
+          ⏰ 가장 활발한 시간: <strong style="color:var(--secondary);">오전 9시</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-dow">
+      <div class="card">
+        <div class="dow-chart" id="dowChart"></div>
+        <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-top:16px;">
+          📅 가장 수다스러운 요일: <strong style="color:var(--green);">화요일</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitHub Pages Guide -->
+  <div class="section">
+    <h2 class="section-title"><span class="emoji">🚀</span> GitHub Pages 배포 가이드</h2>
+    <div class="guide-card">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub Pages로 배포하기
+      </h3>
+
+      <div class="guide-step">
+        <div class="guide-num">1</div>
+        <div class="guide-text">
+          <strong>GitHub에 로그인</strong>하고 오른쪽 상단 <code>+</code> 버튼 → <code>New repository</code> 클릭
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-num">2</div>
+        <div class="guide-text">
+          Repository name을 <code>내아이디.github.io</code> 형태로 입력<br>
+          (예: <code>psyco.github.io</code>)<br>
+          <strong>Public</strong> 선택 후 <code>Create repository</code> 클릭
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-num">3</div>
+        <div class="guide-text">
+          생성된 저장소 페이지에서 <code>uploading an existing file</code> 링크 클릭<br>
+          → 이 <code>index.html</code> 파일을 드래그 앤 드롭!<br>
+          → <code>Commit changes</code> 클릭
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-num">4</div>
+        <div class="guide-text">
+          Settings → Pages 메뉴 → Source를 <code>Deploy from a branch</code> 선택<br>
+          Branch를 <code>main</code> / <code>/(root)</code> 선택 후 <code>Save</code>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-num">5</div>
+        <div class="guide-text">
+          1~2분 후 <code>https://내아이디.github.io</code> 에서 확인!<br>
+          <strong>끝! 🎉</strong> 이 파일 하나만 올리면 바로 볼 수 있어요.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Made with ❤️ · 외가친척 카카오톡 다이제스트 · 2026
+  </div>
+</div>
+
+<script>
+// === DATA ===
+const topUsers = [
+  {name:"이해리", count:13032},
+  {name:"엄마", count:8053},
+  {name:"막내오삼춘", count:6075},
+  {name:"이보희", count:3646},
+  {name:"BLUESON 손정환", count:1641},
+  {name:"종인이형", count:913},
+  {name:"Park", count:878},
+  {name:"(알 수 없음)", count:815},
+  {name:"민진", count:475},
+  {name:"작은이모", count:191},
+];
+
+const topWords = [
+  {word:"다들",count:340},{word:"너무",count:334},{word:"히히",count:309},
+  {word:"많이",count:285},{word:"진짜",count:261},{word:"그래",count:235},
+  {word:"정환이오빠",count:230},{word:"오늘",count:197},{word:"오늘도",count:192},
+  {word:"근데",count:184},{word:"오늘은",count:162},{word:"뽀희야",count:151},
+  {word:"정말",count:151},{word:"하하",count:150},{word:"해리",count:145},
+  {word:"금은동",count:144},{word:"그려",count:142},{word:"요즘",count:140},
+  {word:"아빠",count:138},{word:"그래도",count:132},{word:"우와",count:130},
+  {word:"이제",count:128},{word:"지금",count:127},{word:"우리",count:125},
+  {word:"나는",count:124},{word:"오빠",count:124},{word:"좋은",count:123},
+  {word:"화이팅",count:102},{word:"역시",count:100},{word:"캬캬캬",count:94},
+];
+
+const monthlyData = [
+  {m:"22.01",c:1590},{m:"22.02",c:1398},{m:"22.03",c:1312},{m:"22.04",c:1296},
+  {m:"22.05",c:944},{m:"22.06",c:1235},{m:"22.07",c:884},{m:"22.08",c:1654},
+  {m:"22.09",c:1516},{m:"22.10",c:974},{m:"22.11",c:1789},{m:"22.12",c:1552},
+  {m:"23.01",c:1340},{m:"23.02",c:579},{m:"23.03",c:860},{m:"23.04",c:558},
+  {m:"23.05",c:675},{m:"23.06",c:915},{m:"23.07",c:758},{m:"23.08",c:1273},
+  {m:"23.09",c:1144},{m:"23.10",c:693},{m:"23.11",c:922},{m:"23.12",c:827},
+  {m:"24.01",c:605},{m:"24.02",c:595},{m:"24.03",c:735},{m:"24.04",c:716},
+  {m:"24.05",c:609},{m:"24.06",c:477},{m:"24.07",c:343},{m:"24.08",c:235},
+  {m:"24.09",c:187},{m:"24.10",c:203},{m:"24.11",c:141},{m:"24.12",c:222},
+  {m:"25.01",c:219},{m:"25.02",c:247},{m:"25.03",c:217},{m:"25.04",c:549},
+  {m:"25.05",c:345},{m:"25.06",c:207},{m:"25.07",c:188},{m:"25.08",c:372},
+  {m:"25.09",c:361},{m:"25.10",c:194},{m:"25.11",c:315},{m:"25.12",c:485},
+  {m:"26.01",c:372},{m:"26.02",c:149},{m:"26.03",c:152},
+];
+
+const weeklyData = [
+  {w:"W02",c:99},{w:"W03",c:56},{w:"W04",c:83},{w:"W05",c:51},
+  {w:"W06",c:54},{w:"W07",c:35},{w:"W08",c:22},{w:"W09",c:44},
+  {w:"W10",c:25},{w:"W11",c:62},{w:"W12",c:31},{w:"W13",c:28},
+];
+
+const hourlyData = [1102,342,152,24,14,85,380,1485,2429,3479,2971,2405,2053,1320,1263,1312,1472,1859,1989,2089,2073,1948,2116,1766];
+const dowData = [5290,6054,5705,5764,3575,4696,5044];
+const dowNames = ['월','화','수','목','금','토','일'];
+
+// === RENDER ===
+
+// Ranking
+const maxCount = topUsers[0].count;
+const colors = ['c1','c2','c3','c4','c5'];
+const rankList = document.getElementById('rankingList');
+topUsers.forEach((u, i) => {
+  const pct = (u.count / maxCount * 100).toFixed(1);
+  const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+  const medal = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+  rankList.innerHTML += `
+    <li class="ranking-item">
+      <div class="rank-badge ${rankClass}">${medal}</div>
+      <div class="rank-name">${u.name}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-bar ${colors[i % 5]}" style="width:${pct}%">
+          ${u.count.toLocaleString()}
+        </div>
+      </div>
+    </li>`;
+});
+
+// Word Cloud
+const wcColors = ['wc1','wc2','wc3','wc4','wc5','wc6'];
+const wcEl = document.getElementById('wordCloud');
+const maxWord = topWords[0].count;
+topWords.forEach((w, i) => {
+  const ratio = w.count / maxWord;
+  let sizeClass = ratio > 0.8 ? 's1' : ratio > 0.6 ? 's2' : ratio > 0.4 ? 's3' : ratio > 0.3 ? 's4' : 's5';
+  wcEl.innerHTML += `<span class="word-tag ${sizeClass} ${wcColors[i % 6]}" title="${w.count}회">${w.word}</span>`;
+});
+
+// Monthly chart
+const mChart = document.getElementById('monthlyChart');
+const mLabels = document.getElementById('monthlyLabels');
+const mMax = Math.max(...monthlyData.map(d => d.c));
+monthlyData.forEach((d, i) => {
+  const h = (d.c / mMax * 130).toFixed(0);
+  const hue = 20 + (i / monthlyData.length) * 200;
+  mChart.innerHTML += `<div class="monthly-bar" style="height:${h}px;background:hsl(${hue},65%,60%)"><div class="tooltip">${d.m}: ${d.c.toLocaleString()}건</div></div>`;
+  if (i % 6 === 0) {
+    mLabels.innerHTML += `<span>${d.m}</span>`;
+  } else {
+    mLabels.innerHTML += `<span></span>`;
+  }
+});
+
+// Weekly chart
+const wChart = document.getElementById('weeklyChart');
+const wMax = Math.max(...weeklyData.map(d => d.c));
+weeklyData.forEach(d => {
+  const h = (d.c / wMax * 140).toFixed(0);
+  wChart.innerHTML += `
+    <div class="bar-col">
+      <div class="bar-val">${d.c}</div>
+      <div class="bar" style="height:${h}px;background:linear-gradient(180deg,#4A90D9,#6BBDFF)"></div>
+      <div class="bar-label">${d.w}</div>
+    </div>`;
+});
+
+// Hourly chart
+const hChart = document.getElementById('hourlyChart');
+const hLabels = document.getElementById('hourlyLabels');
+const hMax = Math.max(...hourlyData);
+hourlyData.forEach((c, i) => {
+  const h = (c / hMax * 110).toFixed(0);
+  const intensity = c / hMax;
+  const color = intensity > 0.7 ? '#E8734A' : intensity > 0.4 ? '#F5C842' : '#6BBDFF';
+  hChart.innerHTML += `<div class="hour-bar" style="height:${h}px;background:${color}" title="${i}시: ${c.toLocaleString()}건"></div>`;
+  if (i % 3 === 0) hLabels.innerHTML += `<span>${i}시</span>`;
+  else hLabels.innerHTML += `<span></span>`;
+});
+
+// DOW chart
+const dChart = document.getElementById('dowChart');
+const dMax = Math.max(...dowData);
+const dowColors = ['#4A90D9','#E8734A','#4CAF50','#9C6ADE','#F5C842','#E95F8A','#6BBDFF'];
+dowData.forEach((c, i) => {
+  const h = (c / dMax * 90).toFixed(0);
+  dChart.innerHTML += `
+    <div class="dow-col">
+      <div class="dow-val">${c.toLocaleString()}</div>
+      <div class="dow-bar" style="height:${h}px;background:${dowColors[i]}"></div>
+      <div class="dow-label">${dowNames[i]}</div>
+    </div>`;
+});
+
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+</script>
+</body>
+</html>
