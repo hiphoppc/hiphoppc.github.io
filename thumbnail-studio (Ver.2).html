@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thumbnail Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep: #0a0e17;
+  --bg-panel: #111827;
+  --bg-card: #1a2236;
+  --bg-input: #0f1629;
+  --border: #1e2d4a;
+  --border-focus: #00d4aa;
+  --accent: #00d4aa;
+  --accent-glow: rgba(0, 212, 170, 0.25);
+  --accent-dim: #00a88a;
+  --text: #e2e8f0;
+  --text-dim: #8892a8;
+  --text-muted: #4a5568;
+  --danger: #ff4d6a;
+  --warning: #fbbf24;
+  --font-body: 'Noto Sans KR', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+html { font-size: 14px; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── Header ─── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: linear-gradient(180deg, rgba(17,24,39,0.95) 0%, rgba(10,14,23,0.9) 100%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), #00f0c0);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700;
+  color: var(--bg-deep);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.header h1 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #fff, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.api-key-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.api-key-btn:hover { border-color: var(--accent); color: var(--text); }
+.api-key-btn.connected { border-color: var(--accent); color: var(--accent); }
+.api-key-btn .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+  transition: background 0.3s;
+}
+.api-key-btn.connected .dot { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+
+/* ─── Main Layout ─── */
+.main {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 60px);
+}
+
+/* ─── Left Panel ─── */
+.left-panel {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-track { background: transparent; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+/* Prompt */
+.prompt-area {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  resize: vertical;
+  min-height: 130px;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.prompt-area::placeholder { color: var(--text-muted); }
+.prompt-area:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+.prompt-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Options Grid */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.option-group { display: flex; flex-direction: column; gap: 6px; }
+.option-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.option-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-input) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 12px center no-repeat;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 32px 9px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.option-select:hover { border-color: var(--accent-dim); }
+.option-select:focus { outline: none; border-color: var(--accent); }
+.option-select option { background: var(--bg-panel); color: var(--text); }
+
+/* Reference Image */
+.ref-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ref-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ref-actions {
+  display: flex;
+  gap: 8px;
+}
+.ref-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ref-btn:hover { border-color: var(--accent); color: var(--text); }
+.ref-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: var(--bg-input);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.dropzone.drag-over {
+  border-color: var(--accent);
+  background: rgba(0, 212, 170, 0.05);
+  box-shadow: inset 0 0 30px var(--accent-glow);
+}
+.dropzone-icon {
+  font-size: 2rem;
+  opacity: 0.4;
+}
+.dropzone-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.dropzone-text span { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+.ref-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.ref-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ref-thumb {
+  width: 48px; height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.ref-name {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+}
+.ref-remove {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+.ref-remove:hover { background: rgba(255,77,106,0.15); color: var(--danger); }
+
+/* Generate Button */
+.generate-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), #00f0c0);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--bg-deep);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+}
+.generate-btn:hover {
+  box-shadow: 0 0 30px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+.generate-btn:active { transform: translateY(0); }
+.generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.generate-btn .spinner {
+  display: none;
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(10,14,23,0.3);
+  border-top-color: var(--bg-deep);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.generate-btn.loading .spinner { display: inline-block; }
+.generate-btn.loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Right Panel ─── */
+.right-panel {
+  padding: 28px;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+  background: var(--bg-deep);
+}
+.right-panel::-webkit-scrollbar { width: 5px; }
+.right-panel::-webkit-scrollbar-track { background: transparent; }
+.right-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.results-header {
+  margin-bottom: 20px;
+}
+.results-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.results-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.result-card:hover {
+  border-color: var(--accent-dim);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+.result-image-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* default 16:9 */
+  background: var(--bg-input);
+  overflow: hidden;
+}
+.result-image-wrap img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.result-placeholder {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+.placeholder-icon {
+  font-size: 2.5rem;
+  opacity: 0.3;
+}
+.placeholder-text {
+  font-size: 0.82rem;
+}
+.result-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.result-card:hover .result-overlay { opacity: 1; }
+.overlay-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.overlay-btn:hover { background: var(--accent); color: var(--bg-deep); }
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-input) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Editor Lightbox ─── */
+.editor-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(6,9,15,0.96);
+  backdrop-filter: blur(16px);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.editor-overlay.active { opacity: 1; pointer-events: all; }
+
+/* Editor Header */
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(17,24,39,0.8);
+  flex-shrink: 0;
+}
+.editor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.editor-mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(0,212,170,0.12);
+  border: 1px solid rgba(0,212,170,0.3);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.editor-mode-badge .pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: editorPulse 2s ease-in-out infinite;
+}
+@keyframes editorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.editor-meta {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.editor-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.editor-hdr-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.editor-hdr-btn:hover { border-color: var(--accent); color: var(--text); }
+.editor-hdr-btn.close-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* Editor Body */
+.editor-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Editor Toolbar */
+.editor-toolbar {
+  width: 52px;
+  background: rgba(17,24,39,0.9);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.tool-btn {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  position: relative;
+}
+.tool-btn:hover { background: var(--bg-card); color: var(--text-dim); }
+.tool-btn.active {
+  background: rgba(0,212,170,0.15);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.tool-btn svg { width: 20px; height: 20px; pointer-events: none; }
+.tool-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+.color-picker-wrap {
+  position: relative;
+  margin-top: 4px;
+}
+.color-dot {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.color-dot:hover { border-color: var(--text-dim); }
+.color-input-hidden {
+  position: absolute;
+  width: 26px; height: 26px;
+  top: 0; left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.stroke-select {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.stroke-dot {
+  border-radius: 50%;
+  background: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.stroke-dot:hover, .stroke-dot.active { background: var(--accent); }
+
+/* Editor Canvas Area */
+.editor-canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: repeating-conic-gradient(rgba(255,255,255,0.02) 0% 25%, transparent 0% 50%) 0 0 / 20px 20px;
+}
+.canvas-container {
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.canvas-container canvas {
+  display: block;
+  cursor: crosshair;
+}
+#editorBaseCanvas {
+  position: absolute;
+  top: 0; left: 0;
+}
+#editorDrawCanvas {
+  position: relative;
+  z-index: 2;
+}
+
+/* Editor Footer */
+.editor-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(17,24,39,0.9);
+  flex-shrink: 0;
+}
+.edit-prompt-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.edit-prompt-input {
+  flex: 1;
+  padding: 11px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  transition: border-color 0.2s;
+}
+.edit-prompt-input::placeholder { color: var(--text-muted); }
+.edit-prompt-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.edit-apply-btn {
+  padding: 11px 22px;
+  background: linear-gradient(135deg, var(--accent), #00f0c0);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--bg-deep);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.edit-apply-btn:hover { box-shadow: 0 0 20px var(--accent-glow); }
+.edit-apply-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.edit-apply-btn .spinner-sm {
+  display: none;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(10,14,23,0.3);
+  border-top-color: var(--bg-deep);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.edit-apply-btn.loading .spinner-sm { display: inline-block; }
+.edit-apply-btn.loading .apply-text { display: none; }
+
+/* ─── API Key Modal ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 440px;
+  max-width: 90vw;
+  box-shadow: var(--shadow);
+}
+.modal h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.modal p {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+}
+.modal-btn.secondary { background: transparent; color: var(--text-dim); }
+.modal-btn.secondary:hover { color: var(--text); border-color: var(--text-dim); }
+.modal-btn.primary { background: var(--accent); color: var(--bg-deep); border-color: var(--accent); font-weight: 600; }
+.modal-btn.primary:hover { box-shadow: 0 0 16px var(--accent-glow); }
+
+/* ─── Toast ─── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.88rem;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1100;
+  box-shadow: var(--shadow);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--danger); }
+
+/* ─── Generation History ─── */
+.history-section {
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+.history-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+  .left-panel {
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .right-panel { max-height: none; }
+}
+
+/* ─── Sandbox Banner ─── */
+.sandbox-banner {
+  background: rgba(251, 191, 36, 0.12);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 10px 28px;
+  font-size: 0.85rem;
+  color: var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">T</div>
+    <h1>Thumbnail Studio</h1>
+  </div>
+  <div class="header-actions">
+    <button class="api-key-btn" id="apiKeyBtn" onclick="showApiModal()">
+      <span class="dot"></span>
+      <span id="apiKeyLabel">API Key 설정</span>
+    </button>
+  </div>
+</header>
+
+<!-- Sandbox Warning Banner -->
+<div class="sandbox-banner" id="sandboxBanner" style="display:none">
+  <span>⚠️ 이 미리보기 환경에서는 외부 API 호출이 차단됩니다. <strong>파일을 다운로드</strong>한 후 Chrome/Edge 브라우저에서 직접 열어주세요.</span>
+  <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#fbbf24;font-size:1.2rem;cursor:pointer;margin-left:12px">✕</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <!-- Prompt -->
+    <div>
+      <div class="section-label">지시어 (Prompt)</div>
+      <textarea class="prompt-area" id="promptInput" placeholder="장면, 색감, 분위기, 구도, 인물/오브젝트를 적고 {1}, {2}처럼 특정 이미지를 참조할 수 있습니다."></textarea>
+      <div class="prompt-hint">예시: "{1}의 색감과 {2}의 구도를 합쳐서 새벽 도시 플레이리스트 커버"</div>
+    </div>
+
+    <!-- Options -->
+    <div>
+      <div class="section-label">생성 옵션</div>
+      <div class="options-grid">
+        <div class="option-group">
+          <span class="option-label">출력 장 수</span>
+          <select class="option-select" id="optCount">
+            <option value="1">1장</option>
+            <option value="2">2장</option>
+            <option value="4" selected>4장</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <span class="option-label">비율</span>
+          <select class="option-select" id="optRatio">
+            <option value="16:9" selected>16:9</option>
+            <option value="4:3">4:3</option>
+            <option value="1:1">1:1</option>
+            <option value="9:16">9:16</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <span class="option-label">모델</span>
+          <select class="option-select" id="optModel">
+            <option value="gemini-3.1-flash-image-preview">Gemini 3.1 Flash (Nano Banana 2)</option>
+            <option value="gemini-3-pro-image-preview">Gemini 3 Pro (Nano Banana Pro)</option>
+            <option value="gemini-2.5-flash-image" selected>Gemini 2.5 Flash (Nano Banana)</option>
+            <option value="gemini-2.0-flash-preview-image-generation">Gemini 2.0 Flash</option>
+            <option value="imagen-3.0-generate-002">Imagen 3</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <span class="option-label">사이즈</span>
+          <select class="option-select" id="optSize">
+            <option value="512">512 (0.5K)</option>
+            <option value="1024" selected>1024 (1K)</option>
+            <option value="2048">2048 (2K)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reference Images -->
+    <div class="ref-section">
+      <div class="ref-header">
+        <div>
+          <div class="section-label" style="margin-bottom:0">레퍼런스 이미지</div>
+        </div>
+        <div class="ref-actions">
+          <button class="ref-btn" onclick="document.getElementById('fileInput').click()">+ 추가</button>
+          <button class="ref-btn danger" onclick="clearRefs()">비우기</button>
+        </div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">📁</div>
+        <div class="dropzone-text">
+          이미지를 드래그 & 드롭하거나<br>
+          <span onclick="document.getElementById('fileInput').click()">파일 탐색기</span>에서 선택하세요
+        </div>
+      </div>
+      <div class="ref-list" id="refList"></div>
+    </div>
+
+    <!-- Generate -->
+    <button class="generate-btn" id="generateBtn" onclick="generate()">
+      <span class="btn-text">✦ 생성하기</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="results-header">
+      <div class="section-label">Generated Results</div>
+      <h2>결과</h2>
+      <div class="results-count" id="resultsCount">생성 대기 중</div>
+    </div>
+    <div class="results-grid" id="resultsGrid">
+      <!-- Placeholder cards -->
+      <div class="result-card">
+        <div class="result-image-wrap"><div class="result-placeholder"><div class="placeholder-icon">🖼</div><div class="placeholder-text">아직 생성되지 않았습니다.</div></div></div>
+      </div>
+      <div class="result-card">
+        <div class="result-image-wrap"><div class="result-placeholder"><div class="placeholder-icon">🖼</div><div class="placeholder-text">아직 생성되지 않았습니다.</div></div></div>
+      </div>
+      <div class="result-card">
+        <div class="result-image-wrap"><div class="result-placeholder"><div class="placeholder-icon">🖼</div><div class="placeholder-text">아직 생성되지 않았습니다.</div></div></div>
+      </div>
+      <div class="result-card">
+        <div class="result-image-wrap"><div class="result-placeholder"><div class="placeholder-icon">🖼</div><div class="placeholder-text">아직 생성되지 않았습니다.</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Editor Overlay -->
+<div class="editor-overlay" id="editorOverlay">
+  <!-- Editor Header -->
+  <div class="editor-header">
+    <div class="editor-header-left">
+      <div class="editor-mode-badge">
+        <span class="pulse"></span>
+        수정 지시 모드
+      </div>
+      <span class="editor-meta" id="editorMeta"></span>
+    </div>
+    <div class="editor-header-right">
+      <button class="editor-hdr-btn" onclick="downloadEditorImage(event)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        다운로드
+      </button>
+      <button class="editor-hdr-btn close-btn" onclick="closeEditor()">
+        ✕ 닫기
+      </button>
+    </div>
+  </div>
+
+  <!-- Editor Body -->
+  <div class="editor-body">
+    <!-- Toolbar -->
+    <div class="editor-toolbar">
+      <button class="tool-btn active" id="toolPen" title="펜 도구" onclick="setEditorTool('pen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.855z"/></svg>
+      </button>
+      <button class="tool-btn" id="toolArrow" title="화살표" onclick="setEditorTool('arrow')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
+      </button>
+      <button class="tool-btn" id="toolRect" title="사각형 선택" onclick="setEditorTool('rect')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      </button>
+      <button class="tool-btn" id="toolCircle" title="원형 선택" onclick="setEditorTool('circle')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+      </button>
+
+      <div class="tool-divider"></div>
+
+      <button class="tool-btn" title="되돌리기 (Ctrl+Z)" onclick="editorUndo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </button>
+      <button class="tool-btn" title="모두 지우기" onclick="editorClearAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="tool-divider"></div>
+
+      <!-- Color Picker -->
+      <div class="color-picker-wrap">
+        <div class="color-dot" id="colorDot" style="background:#00ff66"></div>
+        <input type="color" class="color-input-hidden" id="colorPicker" value="#00ff66" onchange="editorSetColor(this.value)">
+      </div>
+
+      <!-- Stroke Width -->
+      <div class="stroke-select">
+        <div class="stroke-dot active" style="width:6px;height:6px" onclick="editorSetStroke(3,this)" data-w="3"></div>
+        <div class="stroke-dot" style="width:10px;height:10px" onclick="editorSetStroke(5,this)" data-w="5"></div>
+        <div class="stroke-dot" style="width:14px;height:14px" onclick="editorSetStroke(8,this)" data-w="8"></div>
+      </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="editor-canvas-area" id="editorCanvasArea">
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="editorBaseCanvas"></canvas>
+        <canvas id="editorDrawCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor Footer -->
+  <div class="editor-footer">
+    <div class="edit-prompt-row">
+      <input type="text" class="edit-prompt-input" id="editPromptInput" placeholder="수정 지시를 입력하세요. 예: 인물 위치를 화살표 방향으로 이동해 줘." onkeydown="if(event.key==='Enter')applyEdit()">
+      <button class="edit-apply-btn" id="editApplyBtn" onclick="applyEdit()">
+        <span class="apply-text">✦ 수정 적용</span>
+        <span class="spinner-sm"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>🔑 Google AI API Key</h3>
+    <p>Gemini API를 사용하여 이미지를 생성합니다. Gemini 3.1 Flash Image, 3 Pro Image, 2.5 Flash Image 등을 지원합니다.<br>
+    <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a>에서 API Key를 발급받으세요.</p>
+    <input class="modal-input" id="apiKeyInput" type="password" placeholder="AIzaSy...">
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeApiModal()">취소</button>
+      <button class="modal-btn primary" onclick="saveApiKey()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───
+let apiKey = localStorage.getItem('thumb_studio_api_key') || '';
+let refImages = []; // { file, dataUrl, name }
+let generatedImages = []; // data URLs
+let lightboxSrc = '';
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', () => {
+  updateApiKeyUI();
+  setupDropzone();
+  setupFileInput();
+  detectSandbox();
+});
+
+// ─── Sandbox Detection ───
+async function detectSandbox() {
+  // Detect if running inside iframe/sandbox that blocks external fetch
+  const isSandboxed = (window !== window.top) || window.location.protocol === 'blob:';
+  if (isSandboxed) {
+    document.getElementById('sandboxBanner').style.display = 'flex';
+  }
+  // Also try a quick test fetch
+  try {
+    const test = await fetch('https://generativelanguage.googleapis.com/', { method: 'HEAD', mode: 'no-cors' });
+  } catch(e) {
+    document.getElementById('sandboxBanner').style.display = 'flex';
+  }
+}
+
+// ─── API Key ───
+function showApiModal() {
+  document.getElementById('apiModal').classList.add('active');
+  document.getElementById('apiKeyInput').value = apiKey;
+  setTimeout(() => document.getElementById('apiKeyInput').focus(), 100);
+}
+function closeApiModal() {
+  document.getElementById('apiModal').classList.remove('active');
+}
+function saveApiKey() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('thumb_studio_api_key', apiKey);
+  updateApiKeyUI();
+  closeApiModal();
+  showToast(apiKey ? 'API Key가 저장되었습니다.' : 'API Key가 제거되었습니다.');
+}
+function updateApiKeyUI() {
+  const btn = document.getElementById('apiKeyBtn');
+  const label = document.getElementById('apiKeyLabel');
+  if (apiKey) {
+    btn.classList.add('connected');
+    label.textContent = 'API 연결됨';
+  } else {
+    btn.classList.remove('connected');
+    label.textContent = 'API Key 설정';
+  }
+}
+
+// ─── Dropzone ───
+function setupDropzone() {
+  const dz = document.getElementById('dropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  });
+  dz.addEventListener('click', () => document.getElementById('fileInput').click());
+}
+function setupFileInput() {
+  document.getElementById('fileInput').addEventListener('change', e => {
+    handleFiles(e.target.files);
+    e.target.value = '';
+  });
+}
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      refImages.push({ file, dataUrl: e.target.result, name: file.name });
+      renderRefList();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderRefList() {
+  const list = document.getElementById('refList');
+  list.innerHTML = refImages.map((img, i) => `
+    <div class="ref-item">
+      <img class="ref-thumb" src="${img.dataUrl}" alt="">
+      <span class="ref-name">{${i+1}} ${img.name}</span>
+      <button class="ref-remove" onclick="removeRef(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function removeRef(idx) {
+  refImages.splice(idx, 1);
+  renderRefList();
+}
+function clearRefs() {
+  refImages = [];
+  renderRefList();
+}
+
+// ─── Generate ───
+async function generate() {
+  if (!apiKey) { showApiModal(); return; }
+
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt && refImages.length === 0) {
+    showToast('지시어를 입력하거나 레퍼런스 이미지를 추가해 주세요.', true);
+    return;
+  }
+
+  const count = parseInt(document.getElementById('optCount').value);
+  const ratio = document.getElementById('optRatio').value;
+  const model = document.getElementById('optModel').value;
+  const size = document.getElementById('optSize').value;
+
+  const btn = document.getElementById('generateBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  // Show skeleton
+  const grid = document.getElementById('resultsGrid');
+  const ratioPercent = getRatioPercent(ratio);
+  grid.innerHTML = Array(count).fill(0).map(() => `
+    <div class="result-card">
+      <div class="result-image-wrap" style="padding-top:${ratioPercent}%">
+        <div class="skeleton" style="position:absolute;top:0;left:0;width:100%;height:100%"></div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('resultsCount').textContent = '생성 중...';
+
+  generatedImages = [];
+
+  if (model.startsWith('imagen')) {
+    await generateWithImagen(prompt, count, ratio, size);
+  } else {
+    await generateWithGemini(prompt, count, ratio, size, model);
+  }
+
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+function getRatioPercent(ratio) {
+  const [w, h] = ratio.split(':').map(Number);
+  return (h / w * 100).toFixed(2);
+}
+
+async function generateWithGemini(prompt, count, ratio, size, model) {
+  const results = [];
+
+  for (let i = 0; i < count; i++) {
+    try {
+      const contents = buildGeminiContents(prompt, ratio, size, i, count);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+      const body = {
+        contents: contents,
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+        }
+      };
+
+      // Gemini 2.5+ image models support temperature differently
+      if (model.includes('2.0')) {
+        body.generationConfig.temperature = 0.9 + (i * 0.05);
+      }
+
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!resp.ok) {
+        let errMsg = `HTTP ${resp.status}`;
+        try {
+          const err = await resp.json();
+          errMsg = err.error?.message || errMsg;
+        } catch(e) {}
+        throw new Error(errMsg);
+      }
+
+      const data = await resp.json();
+      let imageData = null;
+
+      if (data.candidates && data.candidates[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+          if (part.inlineData) {
+            imageData = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            break;
+          }
+        }
+      }
+
+      if (imageData) {
+        results.push(imageData);
+        generatedImages.push(imageData);
+        updateResultCard(i, imageData, ratio);
+      } else {
+        const blockReason = data.candidates?.[0]?.finishReason || '이미지가 생성되지 않았습니다';
+        updateResultCardError(i, blockReason, ratio);
+      }
+    } catch (err) {
+      console.error('Generation error:', err);
+      let msg = err.message;
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        msg = '네트워크 오류: 이 파일을 다운로드 후 브라우저에서 직접 열어주세요.';
+      }
+      updateResultCardError(i, msg, ratio);
+    }
+  }
+
+  document.getElementById('resultsCount').textContent =
+    results.length > 0 ? `${results.length}장 생성 완료` : '생성 실패';
+}
+
+async function generateWithImagen(prompt, count, ratio, size) {
+  try {
+    const fullPrompt = buildImagenPrompt(prompt, ratio);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict`;
+
+    const body = {
+      instances: [{ prompt: fullPrompt }],
+      parameters: {
+        sampleCount: count,
+        aspectRatio: ratio,
+      }
+    };
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      let errMsg = `HTTP ${resp.status}`;
+      try {
+        const err = await resp.json();
+        errMsg = err.error?.message || errMsg;
+      } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    const data = await resp.json();
+    if (data.predictions) {
+      data.predictions.forEach((pred, i) => {
+        const src = `data:image/png;base64,${pred.bytesBase64Encoded}`;
+        generatedImages.push(src);
+        updateResultCard(i, src, ratio);
+      });
+      document.getElementById('resultsCount').textContent = `${data.predictions.length}장 생성 완료`;
+    }
+  } catch (err) {
+    console.error('Imagen error:', err);
+    let msg = err.message;
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      msg = '네트워크 오류: 이 파일을 다운로드 후 브라우저에서 직접 열어주세요.';
+    }
+    showToast('Imagen 생성 실패: ' + msg, true);
+    document.getElementById('resultsCount').textContent = '생성 실패';
+  }
+}
+
+function buildGeminiContents(prompt, ratio, size, variation, total) {
+  const parts = [];
+
+  // Add reference images
+  refImages.forEach((img, idx) => {
+    const base64 = img.dataUrl.split(',')[1];
+    const mime = img.dataUrl.split(';')[0].split(':')[1];
+    parts.push({
+      inlineData: { mimeType: mime, data: base64 }
+    });
+  });
+
+  // Build text prompt
+  let textPrompt = `YouTube 썸네일 이미지를 생성해 주세요.\n`;
+  textPrompt += `비율: ${ratio}, 고품질, 선명한 이미지\n`;
+
+  if (prompt) {
+    textPrompt += `\n지시사항: ${prompt}\n`;
+  }
+
+  if (refImages.length > 0) {
+    textPrompt += `\n위에 첨부한 레퍼런스 이미지의 색감, 분위기, 스타일을 참고하여 새로운 이미지를 만들어 주세요.\n`;
+  }
+
+  if (total > 1) {
+    textPrompt += `\n이것은 ${total}개 중 ${variation + 1}번째 변형입니다. 같은 주제의 다양한 구도와 색감 변형을 시도해 주세요.\n`;
+  }
+
+  parts.push({ text: textPrompt });
+  return [{ role: 'user', parts }];
+}
+
+function buildImagenPrompt(prompt, ratio) {
+  let full = 'High quality YouTube thumbnail, vibrant colors, professional design';
+  if (prompt) full += ', ' + prompt;
+  return full;
+}
+
+function updateResultCard(index, imageSrc, ratio) {
+  const grid = document.getElementById('resultsGrid');
+  const cards = grid.children;
+  if (index >= cards.length) return;
+
+  const ratioPercent = getRatioPercent(ratio);
+  cards[index].innerHTML = `
+    <div class="result-image-wrap" style="padding-top:${ratioPercent}%">
+      <img src="${imageSrc}" alt="Generated ${index + 1}" onclick="openLightbox('${index}')">
+      <div class="result-overlay">
+        <button class="overlay-btn" title="크게 보기" onclick="event.stopPropagation();openLightbox('${index}')">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="overlay-btn" title="다운로드" onclick="event.stopPropagation();downloadImage(${index})">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function updateResultCardError(index, message, ratio) {
+  const grid = document.getElementById('resultsGrid');
+  const cards = grid.children;
+  if (index >= cards.length) return;
+
+  const ratioPercent = getRatioPercent(ratio);
+  cards[index].innerHTML = `
+    <div class="result-image-wrap" style="padding-top:${ratioPercent}%">
+      <div class="result-placeholder" style="color:var(--danger)">
+        <div class="placeholder-icon">⚠</div>
+        <div class="placeholder-text" style="font-size:0.75rem;max-width:200px;text-align:center">${message}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Editor State ───
+let editorCurrentIndex = -1;
+let editorTool = 'pen';
+let editorColor = '#00ff66';
+let editorStroke = 3;
+let editorHistory = []; // array of ImageData snapshots
+let editorIsDrawing = false;
+let editorStartX = 0, editorStartY = 0;
+let editorPreviewSnapshot = null;
+
+// ─── Open Editor ───
+function openLightbox(index) {
+  const idx = parseInt(index);
+  const src = generatedImages[idx];
+  if (!src) return;
+
+  editorCurrentIndex = idx;
+  lightboxSrc = src;
+  editorHistory = [];
+
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}. 오전 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('editorMeta').textContent = `${dateStr} · 이미지 ${idx + 1}`;
+
+  const overlay = document.getElementById('editorOverlay');
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Load image onto canvas
+  const img = new Image();
+  img.onload = () => {
+    const area = document.getElementById('editorCanvasArea');
+    const maxW = area.clientWidth - 40;
+    const maxH = area.clientHeight - 40;
+
+    let w = img.naturalWidth;
+    let h = img.naturalHeight;
+    const scale = Math.min(maxW / w, maxH / h, 1);
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+
+    const baseCanvas = document.getElementById('editorBaseCanvas');
+    const drawCanvas = document.getElementById('editorDrawCanvas');
+    const container = document.getElementById('canvasContainer');
+
+    container.style.width = w + 'px';
+    container.style.height = h + 'px';
+
+    baseCanvas.width = w; baseCanvas.height = h;
+    drawCanvas.width = w; drawCanvas.height = h;
+
+    const baseCtx = baseCanvas.getContext('2d');
+    baseCtx.drawImage(img, 0, 0, w, h);
+
+    const drawCtx = drawCanvas.getContext('2d');
+    drawCtx.clearRect(0, 0, w, h);
+
+    // Save initial empty state
+    editorHistory = [drawCtx.getImageData(0, 0, w, h)];
+
+    setupEditorCanvas(drawCanvas);
+  };
+  img.src = src;
+
+  // Reset tool
+  setEditorTool('pen');
+  document.getElementById('editPromptInput').value = '';
+}
+
+function closeEditor() {
+  document.getElementById('editorOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  cleanupEditorCanvas();
+}
+
+function closeLightbox(e) {
+  closeEditor();
+}
+
+// ─── Tool Selection ───
+function setEditorTool(tool) {
+  editorTool = tool;
+  document.querySelectorAll('.editor-toolbar .tool-btn').forEach(btn => btn.classList.remove('active'));
+  const id = 'tool' + tool.charAt(0).toUpperCase() + tool.slice(1);
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+
+  const drawCanvas = document.getElementById('editorDrawCanvas');
+  drawCanvas.style.cursor = (tool === 'pen' || tool === 'arrow') ? 'crosshair' : 'crosshair';
+}
+
+function editorSetColor(color) {
+  editorColor = color;
+  document.getElementById('colorDot').style.background = color;
+}
+
+function editorSetStroke(w, el) {
+  editorStroke = w;
+  document.querySelectorAll('.stroke-dot').forEach(d => d.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+// ─── Canvas Drawing ───
+let canvasHandlers = {};
+
+function setupEditorCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    editorIsDrawing = true;
+    const pos = getPos(e);
+    editorStartX = pos.x;
+    editorStartY = pos.y;
+
+    if (editorTool === 'pen') {
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.strokeStyle = editorColor;
+      ctx.lineWidth = editorStroke;
+    }
+
+    // Save snapshot for shape preview (rect/circle/arrow)
+    if (editorTool !== 'pen') {
+      editorPreviewSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  function moveDraw(e) {
+    if (!editorIsDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+
+    if (editorTool === 'pen') {
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    } else {
+      // Restore snapshot and draw preview
+      if (editorPreviewSnapshot) {
+        ctx.putImageData(editorPreviewSnapshot, 0, 0);
+      }
+      ctx.strokeStyle = editorColor;
+      ctx.lineWidth = editorStroke;
+      ctx.setLineDash([]);
+
+      if (editorTool === 'rect') {
+        ctx.strokeRect(editorStartX, editorStartY, pos.x - editorStartX, pos.y - editorStartY);
+      } else if (editorTool === 'circle') {
+        const rx = Math.abs(pos.x - editorStartX) / 2;
+        const ry = Math.abs(pos.y - editorStartY) / 2;
+        const cx = (editorStartX + pos.x) / 2;
+        const cy = (editorStartY + pos.y) / 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (editorTool === 'arrow') {
+        drawArrow(ctx, editorStartX, editorStartY, pos.x, pos.y, editorColor, editorStroke);
+      }
+    }
+  }
+
+  function endDraw(e) {
+    if (!editorIsDrawing) return;
+    editorIsDrawing = false;
+    editorPreviewSnapshot = null;
+
+    // Save to history
+    editorHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    // Limit history
+    if (editorHistory.length > 50) editorHistory.shift();
+  }
+
+  canvasHandlers = { startDraw, moveDraw, endDraw };
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', moveDraw, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+}
+
+function cleanupEditorCanvas() {
+  const canvas = document.getElementById('editorDrawCanvas');
+  if (canvasHandlers.startDraw) {
+    canvas.removeEventListener('mousedown', canvasHandlers.startDraw);
+    canvas.removeEventListener('mousemove', canvasHandlers.moveDraw);
+    canvas.removeEventListener('mouseup', canvasHandlers.endDraw);
+    canvas.removeEventListener('mouseleave', canvasHandlers.endDraw);
+    canvas.removeEventListener('touchstart', canvasHandlers.startDraw);
+    canvas.removeEventListener('touchmove', canvasHandlers.moveDraw);
+    canvas.removeEventListener('touchend', canvasHandlers.endDraw);
+  }
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, strokeW) {
+  const headLen = Math.max(15, strokeW * 5);
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  // Arrowhead
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+  ctx.stroke();
+}
+
+// ─── Undo / Clear ───
+function editorUndo() {
+  const canvas = document.getElementById('editorDrawCanvas');
+  const ctx = canvas.getContext('2d');
+
+  if (editorHistory.length > 1) {
+    editorHistory.pop();
+    ctx.putImageData(editorHistory[editorHistory.length - 1], 0, 0);
+  }
+}
+
+function editorClearAll() {
+  const canvas = document.getElementById('editorDrawCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  editorHistory = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
+}
+
+// ─── Apply Edit (send to Gemini) ───
+async function applyEdit() {
+  const editPrompt = document.getElementById('editPromptInput').value.trim();
+  if (!editPrompt) {
+    showToast('수정 지시를 입력해 주세요.', true);
+    document.getElementById('editPromptInput').focus();
+    return;
+  }
+  if (!apiKey) {
+    showToast('API Key를 먼저 설정해 주세요.', true);
+    return;
+  }
+
+  const btn = document.getElementById('editApplyBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    // Merge base + draw canvases
+    const baseCanvas = document.getElementById('editorBaseCanvas');
+    const drawCanvas = document.getElementById('editorDrawCanvas');
+
+    const mergedCanvas = document.createElement('canvas');
+    mergedCanvas.width = baseCanvas.width;
+    mergedCanvas.height = baseCanvas.height;
+    const mCtx = mergedCanvas.getContext('2d');
+    mCtx.drawImage(baseCanvas, 0, 0);
+    mCtx.drawImage(drawCanvas, 0, 0);
+
+    // Convert to base64
+    const mergedDataUrl = mergedCanvas.toDataURL('image/png');
+    const base64Data = mergedDataUrl.split(',')[1];
+
+    // Determine if we have annotations
+    const drawCtx = drawCanvas.getContext('2d');
+    const drawImageData = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+    const hasAnnotations = drawImageData.data.some((v, i) => i % 4 === 3 && v > 0);
+
+    let textPrompt = editPrompt;
+    if (hasAnnotations) {
+      textPrompt = `이 이미지에 그려진 표시(화살표, 원, 사각형, 선 등)는 수정 지시를 나타내는 주석입니다. 주석의 의미를 해석하여 다음 지시를 수행해 주세요:\n\n${editPrompt}\n\n주석(색깔 선, 도형 등)은 최종 결과물에서 제거하고, 깨끗한 이미지로 만들어 주세요.`;
+    }
+
+    const model = document.getElementById('optModel').value;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+    const body = {
+      contents: [{
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              mimeType: 'image/png',
+              data: base64Data
+            }
+          },
+          { text: textPrompt }
+        ]
+      }],
+      generationConfig: {
+        responseModalities: ["TEXT", "IMAGE"],
+      }
+    };
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      let errMsg = `HTTP ${resp.status}`;
+      try {
+        const err = await resp.json();
+        errMsg = err.error?.message || errMsg;
+      } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    const data = await resp.json();
+    let newImageData = null;
+
+    if (data.candidates && data.candidates[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inlineData) {
+          newImageData = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          break;
+        }
+      }
+    }
+
+    if (newImageData) {
+      // Update the image
+      generatedImages[editorCurrentIndex] = newImageData;
+      lightboxSrc = newImageData;
+
+      // Reload onto canvas
+      const img = new Image();
+      img.onload = () => {
+        const baseCtx = baseCanvas.getContext('2d');
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.drawImage(img, 0, 0, baseCanvas.width, baseCanvas.height);
+
+        // Clear annotations
+        editorClearAll();
+
+        // Update the result card in the grid
+        const ratio = document.getElementById('optRatio').value;
+        updateResultCard(editorCurrentIndex, newImageData, ratio);
+      };
+      img.src = newImageData;
+
+      showToast('수정이 적용되었습니다!');
+      document.getElementById('editPromptInput').value = '';
+    } else {
+      const reason = data.candidates?.[0]?.finishReason || '이미지가 반환되지 않았습니다';
+      throw new Error(reason);
+    }
+
+  } catch (err) {
+    console.error('Edit error:', err);
+    let msg = err.message;
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      msg = '네트워크 오류: 파일을 다운로드 후 브라우저에서 직접 열어주세요.';
+    }
+    showToast('수정 실패: ' + msg, true);
+  }
+
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+// ─── Editor Download ───
+function downloadEditorImage(e) {
+  if (e) e.stopPropagation();
+  if (lightboxSrc) downloadDataUrl(lightboxSrc, `thumbnail_edit_${editorCurrentIndex + 1}.png`);
+}
+
+function downloadLightboxImg(e) {
+  downloadEditorImage(e);
+}
+
+// ─── Download ───
+function downloadImage(index) {
+  const src = generatedImages[index];
+  if (!src) return;
+  downloadDataUrl(src, `thumbnail_${index + 1}.png`);
+}
+function downloadDataUrl(dataUrl, filename) {
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('다운로드가 시작되었습니다.');
+}
+
+// ─── Toast ───
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => toast.className = 'toast', 3000);
+}
+
+// ─── Keyboard shortcuts ───
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('editorOverlay').classList.contains('active')) {
+      closeEditor();
+    }
+    if (document.getElementById('apiModal').classList.contains('active')) {
+      closeApiModal();
+    }
+  }
+  // Ctrl+Z for undo in editor
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    if (document.getElementById('editorOverlay').classList.contains('active')) {
+      e.preventDefault();
+      editorUndo();
+    }
+  }
+});
+</script>
+</body>
+</html>
